@@ -1,11 +1,11 @@
-import { PrismaClient, Users } from "@prisma/client"
-import { LoginForm, User, userValidationZod } from "./authModel"
+import { Users } from "@prisma/client"
+import { LoginForm, UserModel, userValidationZod } from "./authModel"
 import { validationResult } from "express-validator"
 import { StatusCodes } from "http-status-codes"
 import { HttpException } from "../exception/HttpException"
 import { compare, compareSync, hash, hashSync } from "bcrypt"
-
-const prisma = new PrismaClient()
+import { generateRefreshToken } from "./jwtToken"
+import { prisma } from "../utils/prismaClient"
 
 /*const prisma = new PrismaClient().$extends({
   query: {
@@ -27,35 +27,36 @@ export const userAlreadyExists = async (email: string) => {
   }
 }
 
-export const userValidation = async (user: User) => {
+export const userValidation = async (user: UserModel) => {
   const verifiedUser = userValidationZod.safeParse(user)
   if (!verifiedUser.success) {
     throw new HttpException(
-      StatusCodes.BAD_REQUEST,
-      verifiedUser.error?.errors.map((e) => e.message).join()
+      StatusCodes.UNPROCESSABLE_ENTITY,
+      verifiedUser.error?.errors.map((e) => e.message).join(" ")
     )
   }
   return verifiedUser
 }
 
-export const signUp = async (user: User) => {
+export const signUp = async (user: UserModel) => {
   // const { userName, email, password, phoneNumber } = user
   const validDetails = await userValidation(user)
   const { userName, email, password, phoneNumber } = validDetails.data
   await userAlreadyExists(email)
-  const RegisterUser = await prisma.users.create({
+  const refreshToken = await generateRefreshToken(user)
+  const registerUser = await prisma.users.create({
     data: {
       userName,
       email,
       password: hashSync(password, 12),
       phoneNumber,
+      refreshToken: refreshToken,
     },
   })
-
-  return RegisterUser // return json web token
+  return registerUser
 }
 
-export const login = async (loginForm: LoginForm): Promise<String> => {
+export const login = async (loginForm: LoginForm): Promise<Users | null> => {
   const { email, password } = loginForm
   // const pass = loginForm.password
   const user: Users = await prisma.users.findUnique({ where: { email } })
@@ -66,5 +67,11 @@ export const login = async (loginForm: LoginForm): Promise<String> => {
   if (!match) {
     throw new HttpException(StatusCodes.BAD_REQUEST, "Incorrect password")
   }
-  return "Login Successful"
+  const loggedUser = await prisma.users.update({
+    where: { email },
+    data: {
+      refreshToken: generateRefreshToken(user),
+    },
+  })
+  return loggedUser
 }

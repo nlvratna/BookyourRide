@@ -20,11 +20,12 @@ model Users{
   password String 
   phoneNumber String 
   role Role? @default(USER)
+  refreshToken String
 
   @@map("users")
 }
 
 enum Role{
   USER
-  RENTAL_DEALER
+  RENTAL_OWNER
 }

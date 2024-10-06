@@ -1,7 +1,7 @@
 import { body } from "express-validator"
 import { z } from "zod"
 
-export interface User {
+export interface UserModel {
   userName: string
   email: string
   password: string
