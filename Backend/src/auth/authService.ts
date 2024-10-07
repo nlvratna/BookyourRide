@@ -1,11 +1,10 @@
 import { Users } from "@prisma/client"
-import { LoginForm, UserModel, userValidationZod } from "./authModel"
-import { validationResult } from "express-validator"
+import { compare, hashSync } from "bcrypt"
 import { StatusCodes } from "http-status-codes"
 import { HttpException } from "../exception/HttpException"
-import { compare, compareSync, hash, hashSync } from "bcrypt"
-import { generateRefreshToken } from "./jwtToken"
 import { prisma } from "../utils/prismaClient"
+import { LoginForm, UserModel, userValidationZod } from "./authModel"
+import { generateRefreshToken } from "./jwtToken"
 
 /*const prisma = new PrismaClient().$extends({
   query: {

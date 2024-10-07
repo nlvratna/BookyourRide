@@ -5,7 +5,7 @@ import { getStatusCode, StatusCodes } from "http-status-codes"
 import CustomRequest from "../utils/CustomRequest"
 
 export const verifyRole = function (req: CustomRequest, next: NextFunction) {
-  const { role } = req.user
+  const role: Role = req.user?.role ?? Role.USER
 
   if (role === Role.RENTAL_OWNER) next()
   else throw new HttpException(StatusCodes.FORBIDDEN, "Access Denied")

@@ -17,7 +17,10 @@ export const verifyJwt = (
     const token = authHeader.split(" ")[1]
     // console.log(token)
 
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET
+    ) as jwt.JwtPayload
     request.user = {
       id: decoded.userInfo.id,
       role: decoded.userInfo.role,

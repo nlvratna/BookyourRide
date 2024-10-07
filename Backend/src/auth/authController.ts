@@ -1,10 +1,11 @@
-import { Router, Request, Response } from "express"
-import { login, signUp } from "./authService"
-import { asyncHandler } from "../utils/AsyncHandler"
-import { generateAccessToken } from "./jwtToken"
-import { Users } from "@prisma/client"
-import { HttpException } from "../exception/HttpException"
+import { Request, Response, Router } from "express"
 import { StatusCodes } from "http-status-codes"
+import { HttpException } from "../exception/HttpException"
+import { asyncHandler } from "../utils/AsyncHandler"
+import CustomRequest from "../utils/CustomRequest"
+import { verifyJwt } from "./authMiddleware"
+import { login, signUp } from "./authService"
+import { generateAccessToken, newAccessToken } from "./jwtToken"
 
 const authRoute = Router()
 
@@ -41,6 +42,29 @@ authRoute.post(
       })
       .status(200)
       .json({ accessToken: token })
+  })
+)
+
+authRoute.get(
+  "/accessToken",
+  verifyJwt,
+  asyncHandler(async (req: CustomRequest, res: Response) => {
+    const id: number = req.user?.id
+    if (!id)
+      throw new HttpException(StatusCodes.UNAUTHORIZED, "User id not found")
+
+    const cookie = req.cookies
+
+    if (!cookie?.refreshtoken) {
+      throw new HttpException(
+        StatusCodes.UNAUTHORIZED,
+        "Refresh token is not available in cookies"
+      )
+    }
+    const refreshToken = cookie.refreshtoken
+    const accessToken = await newAccessToken(id, refreshToken)
+
+    res.status(200).json({ accessToken: accessToken })
   })
 )
 
