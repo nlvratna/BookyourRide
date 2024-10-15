@@ -4,8 +4,10 @@ import { HttpException } from "../exception/HttpException"
 import { asyncHandler } from "../utils/AsyncHandler"
 import CustomRequest from "../utils/CustomRequest"
 import { verifyJwt } from "./authMiddleware"
-import { login, signUp } from "./authService"
+import { login, registerOwner, signUp } from "./authService"
 import { generateAccessToken, newAccessToken } from "./jwtToken"
+import { prisma } from "../utils/prismaClient"
+import { OwnerModel } from "./authModel"
 
 const authRoute = Router()
 
@@ -41,6 +43,24 @@ authRoute.post(
         sameSite: "strict",
       })
       .status(200)
+      .json({ accessToken: token })
+  })
+)
+
+authRoute.post(
+  "/owner/register",
+  asyncHandler(async (req: Request, res: Response) => {
+    console.log(req.body)
+
+    const owner = await registerOwner(req.body)
+    const details = await prisma.users.findFirst({ where: { Owner: owner } })
+    const token: string = generateAccessToken(details)
+    res
+      .cookie("refreshtoken", details.refreshToken, {
+        httpOnly: true,
+        sameSite: "strict",
+      })
+      .status(201)
       .json({ accessToken: token })
   })
 )
