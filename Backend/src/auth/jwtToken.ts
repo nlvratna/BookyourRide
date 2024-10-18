@@ -2,9 +2,11 @@ import { Users } from "@prisma/client"
 
 import * as jwt from "jsonwebtoken"
 import { UserModel } from "./authModel"
-import { prisma } from "../utils/prismaClient"
+
 import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"
+import { log } from "console"
+import { prisma } from "../utils/PrismaClient"
 
 export const generateAccessToken = (user: Users) => {
   const accessToken = jwt.sign(
@@ -18,6 +20,8 @@ export const generateAccessToken = (user: Users) => {
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "5min" }
   )
+  // console.log(process.env.ACCESS_TOKEN_SECRET)
+
   return accessToken
 }
 
@@ -33,10 +37,8 @@ export const generateRefreshToken = function (user: UserModel) {
   )
   return refreshToken
 }
-export const newAccessToken = async (
-  id: number,
-  refreshToken: string
-): Promise<string | null> => {
+
+export const newAccessToken = async (id: number, refreshToken: string): Promise<string | null> => {
   try {
     const user = await prisma.users.findFirst({ where: { id } })
     if (!user) {
@@ -50,9 +52,6 @@ export const newAccessToken = async (
     return grantedAccessToken
   } catch (error) {
     console.error(error)
-    throw new HttpException(
-      StatusCodes.UNAUTHORIZED,
-      "Invalid  or Expired refresh token"
-    )
+    throw new HttpException(StatusCodes.UNAUTHORIZED, "Invalid  or Expired refresh token")
   }
 }

@@ -6,7 +6,7 @@ import CustomRequest from "../utils/CustomRequest"
 import { verifyJwt } from "./authMiddleware"
 import { login, registerOwner, signUp } from "./authService"
 import { generateAccessToken, newAccessToken } from "./jwtToken"
-import { prisma } from "../utils/prismaClient"
+import { prisma } from "../utils/PrismaClient"
 import { OwnerModel } from "./authModel"
 
 const authRoute = Router()
@@ -31,11 +31,7 @@ authRoute.post(
   "/login",
   asyncHandler(async (req: Request, res: Response) => {
     const user = await login(req.body)
-    // if (user === null)  this might become handy
-    //   throw new HttpException(
-    //     StatusCodes.INTERNAL_SERVER_ERROR,
-    //     "Something Went Wrong"
-    //   )
+
     const token: string = generateAccessToken(user)
     res
       .cookie("refreshtoken", user.refreshToken, {
@@ -70,16 +66,12 @@ authRoute.get(
   verifyJwt,
   asyncHandler(async (req: CustomRequest, res: Response) => {
     const id: number = req.user?.id
-    if (!id)
-      throw new HttpException(StatusCodes.UNAUTHORIZED, "User id not found")
+    if (!id) throw new HttpException(StatusCodes.UNAUTHORIZED, "User id not found")
 
     const cookie = req.cookies
 
     if (!cookie?.refreshtoken) {
-      throw new HttpException(
-        StatusCodes.UNAUTHORIZED,
-        "Refresh token is not available in cookies"
-      )
+      throw new HttpException(StatusCodes.UNAUTHORIZED, "Refresh token is not available in cookies")
     }
     const refreshToken = cookie.refreshtoken
     const accessToken = await newAccessToken(id, refreshToken)

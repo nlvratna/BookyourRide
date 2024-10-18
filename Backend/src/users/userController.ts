@@ -1,7 +1,7 @@
 import { Router, Response } from "express"
 
 import { asyncHandler } from "../utils/AsyncHandler"
-import { prisma } from "../utils/prismaClient"
+import { prisma } from "../utils/PrismaClient"
 import CustomRequest from "../utils/CustomRequest"
 
 const userRoute = Router()

@@ -1,14 +1,13 @@
-import express, { Express, Request, Response, Router } from "express"
+import express, { Express } from "express"
 import authRoute from "./auth/authController"
-import globalErrorHandler from "./utils/globalErrorHandler"
+
 import route from "./routes/route"
 import cookieParser from "cookie-parser"
+import globalErrorHandler from "./utils/globalErrorHandler"
 
 const app: Express = express()
 app.use(express.json())
 app.use(cookieParser())
-
-const api = Router().use("/auth", authRoute)
 
 app.use(route)
 

@@ -1,28 +1,13 @@
-import { Owner, Role, Users } from "@prisma/client"
 import { compare, hashSync } from "bcrypt"
 import { StatusCodes } from "http-status-codes"
-import { HttpException } from "../exception/HttpException"
-import { prisma } from "../utils/prismaClient"
-import {
-  LoginForm,
-  loginValidation,
-  OwnerModel,
-  ownerValidation,
-  UserModel,
-  userValidationZod,
-} from "./authModel"
-import { generateRefreshToken } from "./jwtToken"
 
-/*const prisma = new PrismaClient().$extends({
-  query: {
-    Users: {
-      create({ args, query }) {
-        args.data = userValidation.parse(args.data)
-        return query(args)
-      },
-    },
-  },
-})*/
+import { Owner, Role, Users } from "@prisma/client"
+
+import { HttpException } from "../exception/HttpException"
+import { prisma } from "../utils/PrismaClient"
+import { LoginForm, loginValidation, OwnerModel, ownerValidation, UserModel, userValidationZod } from "./authModel"
+import { generateRefreshToken } from "./jwtToken"
+import { globalValidator } from "../utils/GlobalValidator"
 
 export const userAlreadyExists = async (email: string) => {
   const user = await prisma.users.findUnique({
@@ -33,21 +18,10 @@ export const userAlreadyExists = async (email: string) => {
   }
 }
 
-export const userValidation = (user: UserModel) => {
-  const verifiedUser = userValidationZod.safeParse(user)
-  if (!verifiedUser.success) {
-    throw new HttpException(
-      StatusCodes.UNPROCESSABLE_ENTITY,
-      verifiedUser.error?.errors.map((e) => e.message).join(" ")
-    )
-  }
-  return verifiedUser
-}
-
 export const signUp = async (user: UserModel): Promise<Users | null> => {
-  // const { userName, email, password, phoneNumber } = user
-  const validDetails = userValidation(user)
-  const { userName, email, password, phoneNumber } = validDetails.data
+  const validDetails = (await globalValidator(userValidationZod, user)) as UserModel
+  const { userName, email, password, phoneNumber } = validDetails
+
   await userAlreadyExists(email)
   const refreshToken = generateRefreshToken(user)
   const registerUser = await prisma.users.create({
@@ -63,48 +37,34 @@ export const signUp = async (user: UserModel): Promise<Users | null> => {
 }
 
 export const login = async (loginForm: LoginForm): Promise<Users | null> => {
-  const verifiedData = loginValidation.safeParse(loginForm)
-  if (!verifiedData.success) {
-    throw new HttpException(
-      StatusCodes.UNPROCESSABLE_ENTITY,
-      verifiedData.error?.errors.map((e) => e.message).join(" ")
-    )
-  }
-  const { email, password } = verifiedData.data
-  // const pass = loginForm.password
-  const user: Users = await prisma.users.findUnique({ where: { email } })
+  const userDetails = (await globalValidator(loginValidation, loginForm)) as LoginForm
+
+  const user: Users = await prisma.users.findUnique({ where: { email: userDetails.email } })
   if (!user) {
     throw new HttpException(StatusCodes.BAD_REQUEST, "User  not found")
   }
-  const match: boolean = await compare(password, user.password)
+  const match: boolean = await compare(userDetails.password, user.password)
   if (!match) {
     throw new HttpException(StatusCodes.BAD_REQUEST, "Incorrect password")
   }
   const loggedUser = await prisma.users.update({
-    where: { email },
+    // giving a new refresh toke for every  time user logs in
+    where: { email: userDetails.email },
     data: {
       refreshToken: generateRefreshToken(user),
     },
   })
   return loggedUser
 }
-export const registerOwner = async function (
-  owner: OwnerModel
-): Promise<Owner | null> {
+export const registerOwner = async function (owner: OwnerModel): Promise<Owner | null> {
   console.log(owner)
 
   const { email, password } = owner.user
   const userDetails = await prisma.users.findUnique({ where: { email } })
   if (!userDetails) {
     // if the user is not already registered
-    const verifiedUser = ownerValidation.safeParse(owner)
-    if (!verifiedUser.success) {
-      throw new HttpException(
-        StatusCodes.UNPROCESSABLE_ENTITY,
-        verifiedUser.error.errors.map((e) => e.message).join(" ")
-      )
-    }
-    const { user, location, shopName } = verifiedUser.data
+    const verifiedUser = (await globalValidator(ownerValidation, owner)) as OwnerModel
+    const { user, location, shopName } = verifiedUser
     const registerUser = await signUp(user)
     await prisma.users.update({
       where: { email: user.email },
