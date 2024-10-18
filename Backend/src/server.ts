@@ -3,7 +3,7 @@ import authRoute from "./auth/authController"
 
 import route from "./routes/route"
 import cookieParser from "cookie-parser"
-import globalErrorHandler from "./utils/globalErrorHandler"
+import globalErrorHandler from "./utils/GlobalErrorHandler"
 
 const app: Express = express()
 app.use(express.json())
