@@ -5,11 +5,20 @@ import { prisma } from "../utils/PrismaClient"
 import { CarModel, carValidation } from "./listingModel"
 import { globalValidator } from "../utils/GlobalValidator"
 
-export const carMapper = (car: Car & { images: Image[] }): CarModel => {
+const checkOwner = async (userId: number) => {
+  const owner = await prisma.owner.findFirst({ where: { userId: userId } })
+
+  if (!owner) {
+    throw new HttpException(StatusCodes.BAD_GATEWAY, "Owner details not found")
+  }
+  return owner
+}
+
+const carMapper = (car: Car & { images: Image[] }): CarModel => {
   return {
     name: car.name,
     brand: car.brand,
-    image: car.images.map((img) => img.imageUrl),
+    imageUrl: car.images.map((image) => image.imageUrl),
     type: car.type,
     isBooked: car.isBooked,
     price: car.pricePerDay,
@@ -17,13 +26,9 @@ export const carMapper = (car: Car & { images: Image[] }): CarModel => {
 }
 
 export const addListing = async (id: number, carDetails: Car): Promise<CarModel | null> => {
-  const owner = await prisma.owner.findFirst({ where: { userId: id } })
-
-  if (!owner) {
-    throw new HttpException(StatusCodes.BAD_GATEWAY, "Owner details not found")
-  }
   const validDetails = (await globalValidator(carValidation, carDetails)) as CarModel
 
+  const owner = await checkOwner(id)
   const { name, brand, price } = validDetails
 
   const car = await prisma.car.create({
@@ -38,4 +43,23 @@ export const addListing = async (id: number, carDetails: Car): Promise<CarModel 
   })
   const listedCar = carMapper(car)
   return listedCar
+}
+
+export const updateListing = async (userId: number, carId: string, carDetails: Car): Promise<CarModel | null> => {
+  await checkOwner(userId)
+
+  const car = await prisma.car.update({
+    where: { id: carId },
+    data: carDetails,
+    include: {
+      images: true,
+    },
+  })
+  return carMapper(car)
+}
+
+export const deleteListing = async (userId: number, carId: string) => {
+  const owner = await checkOwner(userId)
+
+  await prisma.car.delete({ where: { id: carId } })
 }

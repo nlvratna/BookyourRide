@@ -5,7 +5,7 @@ export interface CarModel {
   brand: string
   type: CarType
   price: number
-  image: String[]
+  imageUrl: string[]
   isBooked: boolean
 }
 

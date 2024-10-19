@@ -11,7 +11,7 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
   } else if (err instanceof ZodException) {
     res.status(422).json({ status: err.status, message: err.issues.errors.map((e) => e.message).join(" ") })
   } else {
-    res.status(500).json({ message: err.stack || "Internal Server Error" })
+    res.status(500).json({ message: err.message || "Internal Server Error", stack: err.stack })
   }
 }
 
