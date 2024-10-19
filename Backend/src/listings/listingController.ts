@@ -24,6 +24,8 @@ listingRoute.patch(
     if (!carId) {
       throw new HttpException(StatusCodes.BAD_REQUEST, `Missing parameter carId`)
     }
+    console.log(req.body)
+
     const car = await updateListing(ownerDetailsId, carId, req.body)
 
     res.status(200).send(car)
@@ -38,7 +40,7 @@ listingRoute.delete(
 
     await deleteListing(userId, carID)
 
-    res.status(204).send("Deleted successfully")
+    res.status(204).json({ message: "Deleted successfully" })
   })
 )
 

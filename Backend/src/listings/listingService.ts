@@ -4,6 +4,7 @@ import { HttpException } from "../exception/HttpException"
 import { prisma } from "../utils/PrismaClient"
 import { CarModel, carValidation } from "./listingModel"
 import { globalValidator } from "../utils/GlobalValidator"
+import { log } from "console"
 
 const checkOwner = async (userId: number) => {
   const owner = await prisma.owner.findFirst({ where: { userId: userId } })
@@ -47,6 +48,7 @@ export const addListing = async (id: number, carDetails: Car): Promise<CarModel 
 
 export const updateListing = async (userId: number, carId: string, carDetails: Car): Promise<CarModel | null> => {
   await checkOwner(userId)
+  console.log(carId)
 
   const car = await prisma.car.update({
     where: { id: carId },

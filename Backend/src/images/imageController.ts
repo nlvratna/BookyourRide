@@ -13,6 +13,8 @@ const upload = multer({ storage })
 
 // sharp - to change stuff on the image
 
+//TODO Testing for these routes
+
 imageRoute.post(
   "/:carId/add_images",
   upload.array("images", 6),
@@ -53,6 +55,6 @@ imageRoute.delete(
 
     await deleteImage(carId, imageId)
 
-    res.status(204).send("Deleted successfully")
+    res.status(204).json({ message: "Deleted successfully" })
   })
 )
