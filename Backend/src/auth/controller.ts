@@ -2,12 +2,12 @@ import { Request, Response, Router } from "express"
 import { StatusCodes } from "http-status-codes"
 import { HttpException } from "../exception/HttpException"
 import { asyncHandler } from "../utils/AsyncHandler"
-import CustomRequest from "../utils/CustomRequest"
+
 import { verifyJwt } from "./authMiddleware"
-import { login, registerOwner, signUp } from "./authService"
-import { generateAccessToken, newAccessToken } from "./jwtToken"
+import { login, registerOwner, signUp } from "./service"
+import { generateAccessToken, newAccessToken } from "./jwt"
 import { prisma } from "../utils/PrismaClient"
-import { OwnerModel } from "./authModel"
+import { OwnerModel } from "./model"
 
 const authRoute = Router()
 

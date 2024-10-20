@@ -1,7 +1,7 @@
 import { Users } from "@prisma/client"
 
 import * as jwt from "jsonwebtoken"
-import { UserModel } from "./authModel"
+import { UserModel } from "./model"
 
 import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"

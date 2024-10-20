@@ -5,8 +5,8 @@ import { Owner, Role, Users } from "@prisma/client"
 
 import { HttpException } from "../exception/HttpException"
 import { prisma } from "../utils/PrismaClient"
-import { LoginForm, loginValidation, OwnerModel, ownerValidation, UserModel, userValidationZod } from "./authModel"
-import { generateRefreshToken } from "./jwtToken"
+import { LoginForm, loginValidation, OwnerModel, ownerValidation, UserModel, userValidationZod } from "./model"
+import { generateRefreshToken } from "./jwt"
 import { globalValidator } from "../utils/GlobalValidator"
 
 export const userAlreadyExists = async (email: string) => {

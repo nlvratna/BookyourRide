@@ -1,11 +1,11 @@
 import { Request, Response, Router } from "express"
 import multer from "multer"
 import { asyncHandler } from "../utils/AsyncHandler"
-import { addImage, deleteImage, editImage } from "./imageService"
+import { addImage, deleteImage, editImage } from "./service"
 import { Image } from "@prisma/client"
 import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"
-import { CustomParams } from "../utils/params"
+import { CustomParams } from "../utils/Params"
 
 const imageRoute = Router()
 

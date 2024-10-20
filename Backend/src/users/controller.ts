@@ -2,7 +2,6 @@ import { Request, Router, Response } from "express"
 
 import { asyncHandler } from "../utils/AsyncHandler"
 import { prisma } from "../utils/PrismaClient"
-import CustomRequest from "../utils/CustomRequest"
 
 const userRoute = Router()
 //TODO  remove id from visibility

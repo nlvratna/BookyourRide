@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from "express"
-import authRoute from "./auth/authController"
+import authRoute from "./auth/controller"
 
 import route from "./routes/route"
 import cookieParser from "cookie-parser"

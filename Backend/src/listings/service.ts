@@ -2,7 +2,7 @@ import { Car, CarType, Image } from "@prisma/client"
 import { StatusCodes } from "http-status-codes"
 import { HttpException } from "../exception/HttpException"
 import { prisma } from "../utils/PrismaClient"
-import { CarModel, carValidation } from "./listingModel"
+import { CarModel, carValidation } from "./model"
 import { globalValidator } from "../utils/GlobalValidator"
 import { log } from "console"
 
