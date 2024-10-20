@@ -21,6 +21,6 @@ export const verifyJwt = (request: Request, res: Response, next: NextFunction) =
     next()
   } catch (error: any) {
     console.log(error)
-    res.status(401).json({ message: "Un authorized" })
+    res.status(401).json({ message: "Invalid token or expired" })
   }
 }

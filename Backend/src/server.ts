@@ -14,5 +14,5 @@ app.use(route)
 app.use(globalErrorHandler)
 
 app.listen(8080, () => {
-  console.log("Server running ")
+  console.log(`Sever running on port 8080`)
 })

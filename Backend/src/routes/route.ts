@@ -5,10 +5,11 @@ import { verifyJwt } from "../auth/authMiddleware"
 import userRoute from "../users/controller"
 import { verifyRole } from "../auth/roleMiddleware"
 import listingRoute from "../listings/controller"
+import ownerRoute from "../users/owner/controller"
 
 const api = Router()
   .use("/auth", authRoute)
   .use("/user", verifyJwt, userRoute)
-  .use("/owner", verifyJwt, verifyRole, listingRoute)
+  .use("/owner", verifyJwt, verifyRole, listingRoute, ownerRoute)
 
 export default Router().use("/api", api)

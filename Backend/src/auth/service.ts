@@ -58,7 +58,7 @@ export const login = async (loginForm: LoginForm): Promise<Users | null> => {
 
   return loggedUser
 }
-export const registerOwner = async function (owner: OwnerModel): Promise<Owner | null> {
+export const registerOwner = async (owner: OwnerModel): Promise<Owner | null> => {
   console.log(owner)
 
   const { email, password } = owner.user
@@ -67,6 +67,7 @@ export const registerOwner = async function (owner: OwnerModel): Promise<Owner |
     // if the user is not already registered
     const verifiedUser = (await globalValidator(ownerValidation, owner)) as OwnerModel
     const { user, location, shopName } = verifiedUser
+
     const registerUser = await signUp(user)
     await prisma.users.update({
       where: { email: user.email },
@@ -87,6 +88,10 @@ export const registerOwner = async function (owner: OwnerModel): Promise<Owner |
       where: { email: loggedUser.email },
       data: { role: Role.RENTAL_OWNER },
     })
+
+    if (loggedUser.role === Role.RENTAL_OWNER) {
+      throw new HttpException(StatusCodes.CONFLICT, "Owner already exits pls login")
+    }
     const registerOwner = await prisma.owner.create({
       data: {
         location: owner.location,

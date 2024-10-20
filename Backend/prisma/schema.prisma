@@ -33,7 +33,7 @@ model Owner{  // still need a lot of fields
   id  String @id @default(uuid())
   location String
   shopName String
-  details  Users  @relation(fields: [userId],references: [id])
+  details  Users  @relation(fields: [userId],references: [id],onDelete: Cascade)
   userId Int @unique
   car Car[] 
 

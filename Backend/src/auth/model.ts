@@ -10,9 +10,11 @@ import { StatusCodes } from "http-status-codes"
 // }
 
 export const userValidationZod = z.object({
-  userName: z.string().trim(),
+  userName: z.string({ required_error: "UserName is required" }).trim(),
   email: z.string({ invalid_type_error: "Expected an email " }).email("Invalid email body"),
-  password: z.string({ required_error: "password is required" }).min(8, "Minimum 8 characters are required for a password"),
+  password: z
+    .string({ required_error: "password is required" })
+    .min(8, "Minimum 8 characters are required for a password"),
   phoneNumber: z.string({ message: "phone number is required" }).length(10),
 })
 
@@ -29,6 +31,7 @@ export const ownerValidation = z.object({
   user: userValidationZod.optional(),
   location: z.string({ message: "location is required" }).trim(),
   shopName: z.string({ message: "shop name is required" }).trim(),
+  dealersLicense: z.string({ required_error: "Dealer's License is required" }),
 })
 
 export type UserModel = z.infer<typeof userValidationZod>
