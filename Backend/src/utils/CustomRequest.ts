@@ -7,5 +7,4 @@ interface CustomRequest extends Request {
     role?: Role
   }
 }
-
-export default CustomRequest
+//No need of this anymore remove this later

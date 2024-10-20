@@ -91,7 +91,12 @@ export const editImage = async (carId: string, imageId: number, file: Express.Mu
   const imageName = generateImageName(file.originalname)
   const imageUrl = await getImageUrl(imageName)
 
-  await checkCar(carId)
+  const car = await checkCar(carId)
+
+  if (!car.images.find((image) => image.id === imageId)) {
+    // should also  check if the owner is car owner or not maybe in the future
+    throw new HttpException(StatusCodes.FORBIDDEN, "Images doesn't belong to the car")
+  }
 
   const params = {
     Bucket: bucketName,
@@ -113,7 +118,9 @@ export const editImage = async (carId: string, imageId: number, file: Express.Mu
 export const deleteImage = async (carId: string, imageId: number) => {
   const car = await checkCar(carId)
   const image = car.images.find((image) => image.id === imageId)
-
+  if (!image) {
+    throw new HttpException(StatusCodes.NOT_FOUND, "Image is not found")
+  }
   const params = {
     Bucket: bucketName,
     Key: image.imageName,

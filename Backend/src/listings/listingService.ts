@@ -7,7 +7,7 @@ import { globalValidator } from "../utils/GlobalValidator"
 import { log } from "console"
 
 const checkOwner = async (userId: number) => {
-  const owner = await prisma.owner.findFirst({ where: { userId: userId } })
+  const owner = await prisma.owner.findFirst({ where: { userId: userId }, include: { car: true } })
 
   if (!owner) {
     throw new HttpException(StatusCodes.BAD_GATEWAY, "Owner details not found")
@@ -43,25 +43,37 @@ export const addListing = async (id: number, carDetails: Car): Promise<CarModel 
     include: { images: true },
   })
   const listedCar = carMapper(car)
+  console.log(listedCar)
+
   return listedCar
 }
 
 export const updateListing = async (userId: number, carId: string, carDetails: Car): Promise<CarModel | null> => {
-  await checkOwner(userId)
+  const owner = await checkOwner(userId)
   console.log(carId)
+  // should also if the car belongs to the owner or nor before proceeding
 
+  if (!owner.car.find((car) => car.id === carId)) {
+    // I don't know if this check is important cause client will send the carId of their car in general when they look ath the cars
+    throw new HttpException(StatusCodes.FORBIDDEN, "Invalid Car Owner")
+  }
   const car = await prisma.car.update({
-    where: { id: carId },
+    where: { id: carId, ownerId: owner.id },
     data: carDetails,
     include: {
       images: true,
     },
   })
+
   return carMapper(car)
 }
 
 export const deleteListing = async (userId: number, carId: string) => {
   const owner = await checkOwner(userId)
 
-  await prisma.car.delete({ where: { id: carId } })
+  if (!owner.car.find((car) => car.id === carId)) {
+    // I don't know if this check is important cause client will send the carId of their car in general when they look at the cars
+    throw new HttpException(StatusCodes.FORBIDDEN, "Invalid Car Owner")
+  }
+  await prisma.car.delete({ where: { id: carId, ownerId: owner.id } })
 }

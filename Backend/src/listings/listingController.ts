@@ -1,16 +1,19 @@
 import { Router, Request, Response } from "express"
 import { asyncHandler } from "../utils/AsyncHandler"
-import CustomRequest from "../utils/CustomRequest"
 import { addListing, deleteListing, updateListing } from "./listingService"
 import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"
+import { CarModel } from "./listingModel"
+import { Car } from "@prisma/client"
+import { CustomParams } from "../utils/params"
 
 const listingRoute = Router()
 
 listingRoute.post(
   "/add_car",
-  asyncHandler(async (req: CustomRequest, res: Response) => {
+  asyncHandler(async (req: Request<{}, {}, Car>, res: Response) => {
     const ownerDetailsId = req.user?.id
+
     const car = await addListing(ownerDetailsId, req.body)
     res.status(200).send(car)
   })
@@ -18,7 +21,7 @@ listingRoute.post(
 
 listingRoute.patch(
   "/:carId/update_car",
-  asyncHandler(async (req: CustomRequest, res: Response) => {
+  asyncHandler(async (req: Request<CustomParams, {}, Car>, res: Response) => {
     const ownerDetailsId = req.user?.id
     const carId: string = req.params?.carId
     if (!carId) {
@@ -34,11 +37,11 @@ listingRoute.patch(
 
 listingRoute.delete(
   "/:carId/delete_car",
-  asyncHandler(async (req: CustomRequest, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.id
-    const carID: string = req.params?.carId
+    const carId: string = req.params?.carId
 
-    await deleteListing(userId, carID)
+    await deleteListing(userId, carId)
 
     res.status(204).json({ message: "Deleted successfully" })
   })

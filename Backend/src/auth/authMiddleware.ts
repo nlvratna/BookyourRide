@@ -1,14 +1,14 @@
-import { Response, NextFunction } from "express"
+import { Request, Response, NextFunction } from "express"
 import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"
 import * as jwt from "jsonwebtoken"
 
-import CustomRequest from "../utils/CustomRequest"
-
-export const verifyJwt = (request: CustomRequest, res: Response, next: NextFunction) => {
+export const verifyJwt = (request: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = request.headers.authorization
-    if (!authHeader?.startsWith("Bearer ")) throw new HttpException(StatusCodes.UNAUTHORIZED, "Authorization failed")
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw new HttpException(StatusCodes.UNAUTHORIZED, "Authorization failed")
+    }
     const token = authHeader.split(" ")[1]
     // console.log(token)
 

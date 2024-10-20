@@ -49,12 +49,12 @@ enum Role{
 model Car{
   id String @id @default(uuid())
   name String
-  type CarType
+  type CarType       
   brand String
   images Image[]
   pricePerDay Float 
   isBooked Boolean @default(false)
-
+ // I need some unique field so that the car don't get added twice from same owner - carNumber Plate
   owner Owner @relation(fields: [ownerId],references: [id])
   ownerId String 
 }

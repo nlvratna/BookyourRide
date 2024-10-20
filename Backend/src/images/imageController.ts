@@ -5,6 +5,7 @@ import { addImage, deleteImage, editImage } from "./imageService"
 import { Image } from "@prisma/client"
 import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"
+import { CustomParams } from "../utils/params"
 
 const imageRoute = Router()
 
@@ -31,11 +32,11 @@ imageRoute.post(
 )
 
 imageRoute.put(
-  "/:carId/change_image/:id",
+  "/:carId/change_image/:imageId",
   upload.single("image"),
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request<CustomParams>, res: Response) => {
     const carId: string = req.params?.carId
-    const imageId: number = parseInt(req.params?.id, 10)
+    const imageId: number = req.params?.imageId
 
     if (!carId || !imageId) {
       throw new HttpException(StatusCodes.BAD_REQUEST, `Missing parameter carId`)
@@ -49,9 +50,9 @@ imageRoute.put(
 
 imageRoute.delete(
   "/:carId/delete_image/:id",
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request<CustomParams>, res: Response) => {
     const carId: string = req.params?.carId
-    const imageId: number = parseInt(req.params?.id, 10)
+    const imageId: number = req.params?.id
 
     await deleteImage(carId, imageId)
 

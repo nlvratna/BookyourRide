@@ -16,6 +16,7 @@ authRoute.post(
 
   asyncHandler(async (req: Request, res: Response) => {
     const user = await signUp(req.body)
+
     const token: string = generateAccessToken(user)
     res
       .cookie("refreshtoken", user.refreshToken, {
@@ -31,7 +32,6 @@ authRoute.post(
   "/login",
   asyncHandler(async (req: Request, res: Response) => {
     const user = await login(req.body)
-
     const token: string = generateAccessToken(user)
     res
       .cookie("refreshtoken", user.refreshToken, {
@@ -64,7 +64,7 @@ authRoute.post(
 authRoute.get(
   "/accessToken",
   verifyJwt,
-  asyncHandler(async (req: CustomRequest, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const id: number = req.user?.id
     if (!id) throw new HttpException(StatusCodes.UNAUTHORIZED, "User id not found")
 

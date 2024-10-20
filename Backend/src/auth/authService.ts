@@ -54,6 +54,8 @@ export const login = async (loginForm: LoginForm): Promise<Users | null> => {
       refreshToken: generateRefreshToken(user),
     },
   })
+  console.log(loggedUser)
+
   return loggedUser
 }
 export const registerOwner = async function (owner: OwnerModel): Promise<Owner | null> {
