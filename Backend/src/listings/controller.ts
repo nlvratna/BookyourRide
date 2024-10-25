@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/AsyncHandler"
 import { addListing, deleteListing, updateListing } from "./service"
 import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"
-import { CarModel } from "./model"
+
 import { Car } from "@prisma/client"
 import { CustomParams } from "../utils/Params"
 

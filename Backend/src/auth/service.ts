@@ -41,7 +41,7 @@ export const login = async (loginForm: LoginForm): Promise<Users | null> => {
 
   const user: Users = await prisma.users.findUnique({ where: { email: userDetails.email } })
   if (!user) {
-    throw new HttpException(StatusCodes.BAD_REQUEST, "User  not found")
+    throw new HttpException(StatusCodes.BAD_REQUEST, "Invalid email")
   }
   const match: boolean = await compare(userDetails.password, user.password)
   if (!match) {
@@ -54,13 +54,10 @@ export const login = async (loginForm: LoginForm): Promise<Users | null> => {
       refreshToken: generateRefreshToken(user),
     },
   })
-  console.log(loggedUser)
 
   return loggedUser
 }
 export const registerOwner = async (owner: OwnerModel): Promise<Owner | null> => {
-  console.log(owner)
-
   const { email, password } = owner.user
   const userDetails = await prisma.users.findUnique({ where: { email } })
   if (!userDetails) {

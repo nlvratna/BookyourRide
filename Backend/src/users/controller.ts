@@ -14,10 +14,6 @@ const userRoute = Router()
 userRoute.get(
   "/profile",
   asyncHandler(async (req: Request, res: Response) => {
-    // console.log("Profile route hit")
-    // console.log("User:", req.user?.role)
-    // console.log(req.user?.id)
-
     const id: number = req.user.id
 
     const user = await getProfile(id)
@@ -35,11 +31,7 @@ userRoute.patch(
     if (password === null) {
       throw new HttpException(StatusCodes.FORBIDDEN, "Password is required")
     }
-    console.log(req.body.password)
 
-    if (!req.body) {
-      throw new HttpException(StatusCodes.UNAUTHORIZED, "Password is required")
-    }
     const userProfile = await changeDetails(id, req.body)
     res.status(200).send(userProfile)
   })

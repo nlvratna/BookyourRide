@@ -46,8 +46,6 @@ authRoute.post(
 authRoute.post(
   "/owner/register",
   asyncHandler(async (req: Request, res: Response) => {
-    console.log(req.body)
-
     const owner = await registerOwner(req.body)
     const details = await prisma.users.findFirst({ where: { Owner: owner } })
     const token: string = generateAccessToken(details)

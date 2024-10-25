@@ -4,7 +4,8 @@ import { HttpException } from "../exception/HttpException"
 import { prisma } from "../utils/PrismaClient"
 import { CarModel, carValidation } from "./model"
 import { globalValidator } from "../utils/GlobalValidator"
-import { log } from "console"
+
+import { deleteObject, getImageUrl } from "./images/service"
 
 const checkOwner = async (userId: number) => {
   const owner = await prisma.owner.findFirst({ where: { userId: userId }, include: { car: true } })
@@ -15,21 +16,35 @@ const checkOwner = async (userId: number) => {
   return owner
 }
 
-const carMapper = (car: Car & { images: Image[] }): CarModel => {
+const carMapper = (car: Car, imageUrl: any): CarModel => {
   return {
+    // I should send the carId
     name: car.name,
     brand: car.brand,
-    imageUrl: car.images.map((image) => image.imageUrl),
+    imageUrl: imageUrl,
     type: car.type,
     isBooked: car.isBooked,
     price: car.pricePerDay,
   }
 }
 
-export const addListing = async (id: number, carDetails: Car): Promise<CarModel | null> => {
-  const validDetails = (await globalValidator(carValidation, carDetails)) as CarModel
+const getUrls = async (images: Image[]): Promise<string[]> => {
+  // Use Promise.all to handle multiple async calls
+  const urls = await Promise.all(
+    images.map(async (image) => {
+      return await getImageUrl(image.imageName)
+    })
+  )
 
-  const owner = await checkOwner(id)
+  return urls
+}
+
+export const addListing = async (id: number, carDetails: Car): Promise<CarModel | null> => {
+  //  Independent promises can be done this way
+  const [validDetails, owner] = await Promise.all([
+    globalValidator(carValidation, carDetails) as Promise<CarModel>,
+    checkOwner(id),
+  ])
   const { name, brand, price } = validDetails
 
   const car = await prisma.car.create({
@@ -42,8 +57,10 @@ export const addListing = async (id: number, carDetails: Car): Promise<CarModel 
     },
     include: { images: true },
   })
-  const listedCar = carMapper(car)
-  console.log(listedCar)
+
+  const imageUrls = await getUrls(car.images)
+
+  const listedCar = carMapper(car, imageUrls)
 
   return listedCar
 }
@@ -64,8 +81,9 @@ export const updateListing = async (userId: number, carId: string, carDetails: C
       images: true,
     },
   })
+  const url = await getUrls(car.images)
 
-  return carMapper(car)
+  return carMapper(car, url)
 }
 
 export const deleteListing = async (userId: number, carId: string) => {
@@ -75,5 +93,6 @@ export const deleteListing = async (userId: number, carId: string) => {
     // I don't know if this check is important cause client will send the carId of their car in general when they look at the cars
     throw new HttpException(StatusCodes.FORBIDDEN, "Invalid Car Owner")
   }
+  await deleteObject(`${owner.id}/${carId}`)
   await prisma.car.delete({ where: { id: carId, ownerId: owner.id } })
 }

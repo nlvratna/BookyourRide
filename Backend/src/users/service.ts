@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes"
 import { HttpException } from "../exception/HttpException"
 import { prisma } from "../utils/PrismaClient"
 import { Profile } from "./model"
-import { compare } from "bcrypt"
+import { compare, compareSync } from "bcrypt"
 import { Owner, Role, Users } from "@prisma/client"
 import { boolean } from "zod"
 
@@ -57,13 +57,11 @@ export const deleteAccount = async (userId: number, password: string) => {
     where: { id: userId },
   })
 
-  console.log(password)
-
   if (!user) {
     throw new HttpException(StatusCodes.NOT_FOUND, "User not found")
   }
 
-  if (!(await compare(password, user.password))) {
+  if (!compareSync(password, user.password)) {
     throw new HttpException(StatusCodes.UNAUTHORIZED, "Incorrect password")
   }
 

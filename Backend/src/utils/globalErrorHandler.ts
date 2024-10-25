@@ -11,11 +11,9 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
     })
   } else if (err instanceof ZodException) {
     res.status(422).json({ status: err.status, message: err.issues.errors.map((e) => e.message).join(" ") })
-    // } else if (err instanceof PrismaClientKnownRequestError) {
-    //   res.status(500).json({ code: err.code, message: err.message, metaData: err.meta || "Unknown" })
-    //   console.log({ cause: err.cause })
   } else {
     res.status(500).json({ message: err.message || "Internal Server Error" })
+    console.log(err.stack)
   }
 }
 

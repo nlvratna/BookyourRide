@@ -29,9 +29,8 @@ export const loginValidation = z.object({
 
 export const ownerValidation = z.object({
   user: userValidationZod.optional(),
-  location: z.string({ message: "location is required" }).trim(),
-  shopName: z.string({ message: "shop name is required" }).trim(),
-  dealersLicense: z.string({ required_error: "Dealer's License is required" }),
+  location: z.string({ message: "location is required" }).trim().toLowerCase(),
+  shopName: z.string({ message: "shop name is required" }).trim().toLowerCase(),
 })
 
 export type UserModel = z.infer<typeof userValidationZod>

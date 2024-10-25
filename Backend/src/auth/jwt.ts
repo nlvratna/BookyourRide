@@ -20,7 +20,6 @@ export const generateAccessToken = (user: Users) => {
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "5min" }
   )
-  // console.log(process.env.ACCESS_TOKEN_SECRET)
 
   return accessToken
 }
@@ -52,6 +51,6 @@ export const newAccessToken = async (id: number, refreshToken: string): Promise<
     return grantedAccessToken
   } catch (error) {
     console.error(error)
-    throw new HttpException(StatusCodes.UNAUTHORIZED, "Invalid  or Expired refresh token")
+    return error
   }
 }

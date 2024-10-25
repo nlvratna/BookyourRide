@@ -6,7 +6,7 @@ import { StatusCodes } from "http-status-codes"
 import { CarDetails } from "./model"
 
 export const getListings = async (userId: number): Promise<Car[] | null> => {
-  const owner = await prisma.owner.findUnique({ where: { userId }, include: { car: true } })
+  const owner = await prisma.owner.findUnique({ where: { userId }, include: { car: true } }) // images are required
 
   if (!owner) {
     throw new HttpException(StatusCodes.NOT_FOUND, "Owner details not found")

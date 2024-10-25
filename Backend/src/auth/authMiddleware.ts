@@ -10,7 +10,6 @@ export const verifyJwt = (request: Request, res: Response, next: NextFunction) =
       throw new HttpException(StatusCodes.UNAUTHORIZED, "Authorization failed")
     }
     const token = authHeader.split(" ")[1]
-    // console.log(token)
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET) as jwt.JwtPayload
     request.user = {
@@ -21,6 +20,6 @@ export const verifyJwt = (request: Request, res: Response, next: NextFunction) =
     next()
   } catch (error: any) {
     console.log(error)
-    res.status(401).json({ message: "Invalid token or expired" })
+    return error
   }
 }
