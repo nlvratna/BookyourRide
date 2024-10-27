@@ -1,11 +1,11 @@
 import { Request, Response, Router } from "express"
-import multer from "multer"
-import { asyncHandler } from "../../utils/AsyncHandler"
-import { addImage, deleteImage, getImageUrl } from "./service"
+import multer, { memoryStorage } from "multer"
+import { asyncHandler } from "../utils/AsyncHandler"
+import { addImage, deleteImage, getImages } from "./service"
 import { Image } from "@prisma/client"
-import { HttpException } from "../../exception/HttpException"
+import { HttpException } from "../exception/HttpException"
 import { StatusCodes } from "http-status-codes"
-import { CustomParams } from "../../utils/Params"
+import { CustomParams } from "../utils/Params"
 import { ImageModel } from "./model"
 
 const imageRoute = Router()
@@ -14,34 +14,33 @@ interface Query {
   fileName: string
 }
 
+const storage = memoryStorage()
+
+const upload = multer({ storage })
+
 // sharp - to change stuff on the image
 
 //TODO Testing for these routes
 
-imageRoute.get(
+imageRoute.post(
   "/:carId/add_image",
+  upload.single("image"),
   asyncHandler(async (req: Request<CustomParams, {}, ImageModel>, res: Response) => {
     const carId: string = req.params?.carId
-    if (!carId) {
-      throw new HttpException(StatusCodes.BAD_REQUEST, `Missing parameter carId`)
+    if (!carId || !req.file) {
+      throw new HttpException(StatusCodes.BAD_REQUEST, `Missing a required parameter`)
     }
-    const file: ImageModel = {
-      fileName: "img.jpeg",
-      contentType: "image/jpeg",
-    }
-
-    const image = await addImage(carId, file)
+    const image = await addImage(carId, req.file)
     console.log(image)
 
     res.status(200).send(image)
   })
 )
 imageRoute.get(
-  "/image",
-  asyncHandler(async (req: Request<{}, {}, {}, Query>, res: Response) => {
-    const url = await getImageUrl(req.query.fileName)
-
-    res.send(url)
+  "/:carId/images",
+  asyncHandler(async (req: Request<CustomParams>, res: Response) => {
+    const images = await getImages(req.params?.carId)
+    res.status(200).send(images)
   })
 )
 

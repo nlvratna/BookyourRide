@@ -1,5 +1,5 @@
 import { CarType } from "@prisma/client"
-
+// I might not need this and I might delete this
 export interface BookingDetails {
   id: string
   carName: string

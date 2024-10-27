@@ -5,8 +5,6 @@ export interface CarModel {
   brand: string
   type: CarType
   price: number
-  imageUrl: string[]
-  isBooked: boolean
 }
 
 export const carValidation = z.object({

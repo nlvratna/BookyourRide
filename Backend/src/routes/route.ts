@@ -6,7 +6,7 @@ import userRoute from "../users/controller"
 import { verifyRole } from "../auth/roleMiddleware"
 import listingRoute from "../listings/controller"
 import ownerRoute from "../users/owner/controller"
-import imageRoute from "../listings/images/controller"
+import imageRoute from "../images/controller"
 
 const api = Router()
   .use("/auth", authRoute)
