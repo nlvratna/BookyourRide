@@ -18,8 +18,8 @@ export const verifyJwt = (request: Request, res: Response, next: NextFunction) =
     }
 
     next()
-  } catch (error: any) {
+  } catch (error) {
     console.log(error)
-    return error
+    throw new HttpException(StatusCodes.UNAUTHORIZED, error)
   }
 }

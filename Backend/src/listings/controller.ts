@@ -6,12 +6,13 @@ import { StatusCodes } from "http-status-codes"
 
 import { Car } from "@prisma/client"
 import { CustomParams } from "../utils/Params"
+import { CarModel } from "./model"
 
 const listingRoute = Router()
 
 listingRoute.post(
   "/add_car",
-  asyncHandler(async (req: Request<{}, {}, Car>, res: Response) => {
+  asyncHandler(async (req: Request<{}, {}, CarModel>, res: Response) => {
     const ownerDetailsId = req.user?.id
 
     const car = await addListing(ownerDetailsId, req.body)
@@ -21,7 +22,7 @@ listingRoute.post(
 
 listingRoute.patch(
   "/:carId/update_car",
-  asyncHandler(async (req: Request<CustomParams, {}, Car>, res: Response) => {
+  asyncHandler(async (req: Request<CustomParams, {}, CarModel>, res: Response) => {
     const ownerDetailsId = req.user?.id
     const carId: string = req.params?.carId
     if (!carId) {

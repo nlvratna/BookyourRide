@@ -55,8 +55,8 @@ model Car{
   type         CarType       
   brand        String
   images       Image[]
-  pricePerDay  Float 
-  isBooked     Boolean   @default(false)
+  pricePerDay  Decimal       @db.Money
+  isBooked     Boolean       @default(false)
 
   bookings     Bookings[]  // One car can have multiple bookings over time
 
