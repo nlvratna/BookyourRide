@@ -105,7 +105,7 @@ export const getImages = async (carId: string): Promise<ImageModel[]> => {
 }
 
 export const deleteImage = async (carId: string, imageId: number) => {
-  const car = await checkCar(carId)
+  const car = await checkCar(carId) // await prisma.image.findFirst({where:{carId:carId,id:id}}) better version - maybe an index in db
   const image = car.images.find((image) => image.id === imageId)
   if (!image) {
     throw new HttpException(StatusCodes.NOT_FOUND, "Image is not found")

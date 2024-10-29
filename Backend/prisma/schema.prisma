@@ -39,9 +39,6 @@ model Owner{  // still need a lot of fields
   details   Users    @relation(fields: [userId],references: [id],onDelete: Cascade)
   userId    Int      @unique
   car       Car[] 
-
-
-
 }
 
 enum Role{
@@ -57,10 +54,9 @@ model Car{
   images       Image[]
   pricePerDay  Decimal       @db.Money
   isBooked     Boolean       @default(false)
-
   bookings     Bookings[]  // One car can have multiple bookings over time
 
- // I need some unique field so that the car don't get added twice from same owner - carNumber Plate //TODO
+ // I need some unique field so that the car don't get added twice from same owner - carNumber Plate //TODO  or this could be a unique field
 
   owner Owner @relation(fields: [ownerId],references: [id],onDelete: NoAction)
   ownerId String 
