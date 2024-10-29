@@ -38,16 +38,15 @@ export const addListing = async (id: number, carDetails: CarModel): Promise<Car 
 }
 
 export const updateListing = async (userId: number, carId: string, carDetails: CarModel): Promise<Car | null> => {
-  const owner = await checkOwner(userId)
-  console.log(carId)
-  // should also if the car belongs to the owner or nor before proceeding
-
-  if (!owner.car.find((car) => car.id === carId)) {
-    // I don't know if this check is important cause client will send the carId of their car in general when they look ath the cars
-    throw new HttpException(StatusCodes.FORBIDDEN, "Invalid Car Owner")
-  }
   const car = await prisma.car.update({
-    where: { id: carId, ownerId: owner.id },
+    where: {
+      id: carId,
+      owner: {
+        details: {
+          id: userId,
+        },
+      },
+    },
     data: carDetails,
     include: {
       images: true,
@@ -67,4 +66,23 @@ export const deleteListing = async (userId: number, carId: string) => {
 
   await deleteObject(carId)
   await prisma.car.delete({ where: { id: carId, ownerId: owner.id } })
+}
+
+const uListing = async (userId: number, carId: string, carDetails: CarModel): Promise<Car | null> => {
+  const car = await prisma.car.update({
+    where: {
+      id: carId,
+      owner: {
+        details: {
+          id: userId,
+        },
+      },
+    },
+    data: carDetails,
+    include: {
+      images: true,
+    },
+  })
+
+  return
 }

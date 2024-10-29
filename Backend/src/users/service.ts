@@ -38,18 +38,15 @@ export const changeDetails = async (userId: number, details: Profile): Promise<P
     throw new HttpException(StatusCodes.NOT_FOUND, "User not found")
   }
 
-  if (user.role === Role.RENTAL_OWNER) {
-    const userDetails = await prisma.owner.update({
-      where: { userId },
-      data: details,
-      include: { details: true },
-    })
-    return profileMapper(userDetails.details, userDetails)
-  } else {
-    const userDetails = await prisma.users.update({ where: { id: userId }, data: details })
+  const userDetails = await prisma.users.update({
+    where: { id: userId },
+    data: details,
+    include: {
+      Owner: true,
+    },
+  })
 
-    return profileMapper(userDetails)
-  }
+  return profileMapper(userDetails, userDetails.Owner)
 }
 
 export const deleteAccount = async (userId: number, password: string) => {

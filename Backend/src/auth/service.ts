@@ -8,6 +8,7 @@ import { prisma } from "../utils/PrismaClient"
 import { LoginForm, loginValidation, OwnerModel, ownerValidation, UserModel, userValidationZod } from "./model"
 import { generateRefreshToken } from "./jwt"
 import { globalValidator } from "../utils/GlobalValidator"
+import { AsyncLocalStorage } from "async_hooks"
 
 export const userAlreadyExists = async (email: string) => {
   const user = await prisma.users.findUnique({
@@ -19,10 +20,13 @@ export const userAlreadyExists = async (email: string) => {
 }
 
 export const signUp = async (user: UserModel): Promise<Users | null> => {
-  const validDetails = (await globalValidator(userValidationZod, user)) as UserModel
+  const [validDetails] = await Promise.all([
+    (await globalValidator(userValidationZod, user)) as UserModel,
+    await userAlreadyExists(user.email),
+  ])
+
   const { userName, email, password, phoneNumber } = validDetails
 
-  await userAlreadyExists(email)
   const refreshToken = generateRefreshToken(user)
   const registerUser = await prisma.users.create({
     data: {
@@ -37,9 +41,11 @@ export const signUp = async (user: UserModel): Promise<Users | null> => {
 }
 
 export const login = async (loginForm: LoginForm): Promise<Users | null> => {
-  const userDetails = (await globalValidator(loginValidation, loginForm)) as LoginForm
+  const [userDetails, user] = await Promise.all([
+    (await globalValidator(loginValidation, loginForm)) as LoginForm,
+    await prisma.users.findUnique({ where: { email: loginForm.email } }),
+  ])
 
-  const user: Users = await prisma.users.findUnique({ where: { email: userDetails.email } })
   if (!user) {
     throw new HttpException(StatusCodes.BAD_REQUEST, "Invalid email")
   }
@@ -57,7 +63,7 @@ export const login = async (loginForm: LoginForm): Promise<Users | null> => {
 
   return loggedUser
 }
-export const registerOwner = async (owner: OwnerModel): Promise<Owner | null> => {
+export const registerOwner = async (owner: OwnerModel): Promise<(Owner & { details: Users }) | null> => {
   const { email, password } = owner.user
   const userDetails = await prisma.users.findUnique({ where: { email } })
   if (!userDetails) {
@@ -66,36 +72,46 @@ export const registerOwner = async (owner: OwnerModel): Promise<Owner | null> =>
     const { user, location, shopName } = verifiedUser
 
     const registerUser = await signUp(user)
-    await prisma.users.update({
-      where: { email: user.email },
-      data: { role: Role.RENTAL_OWNER },
+    return await prisma.$transaction(async (tx) => {
+      await tx.users.update({
+        where: { email: user.email },
+        data: { role: Role.RENTAL_OWNER },
+      })
+      const registeredOwner = await tx.owner.create({
+        data: {
+          location,
+          shopName,
+          details: { connect: { id: registerUser.id } },
+        },
+        include: {
+          details: true,
+        },
+      })
+      return registeredOwner
     })
-
-    const registeredOwner = await prisma.owner.create({
-      data: {
-        location,
-        shopName,
-        details: { connect: { id: registerUser.id } },
-      },
-    })
-    return registeredOwner
   } else {
     const loggedUser = await login({ email, password })
-    await prisma.users.update({
-      where: { email: loggedUser.email },
-      data: { role: Role.RENTAL_OWNER },
-    })
 
     if (loggedUser.role === Role.RENTAL_OWNER) {
       throw new HttpException(StatusCodes.CONFLICT, "Owner already exits pls login")
     }
-    const registerOwner = await prisma.owner.create({
-      data: {
-        location: owner.location,
-        shopName: owner.shopName,
-        details: { connect: { id: loggedUser.id } },
-      },
+
+    return await prisma.$transaction(async (tx) => {
+      await tx.users.update({
+        where: { email: loggedUser.email },
+        data: { role: Role.RENTAL_OWNER },
+      })
+      const registerOwner = await prisma.owner.create({
+        data: {
+          location: owner.location,
+          shopName: owner.shopName,
+          details: { connect: { id: loggedUser.id } },
+        },
+        include: {
+          details: true,
+        },
+      })
+      return registerOwner
     })
-    return registerOwner
   }
 }

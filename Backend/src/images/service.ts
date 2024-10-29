@@ -19,7 +19,7 @@ const checkCar = async (carId: string) => {
   }
   return car
 }
-
+// creating a s3 client
 const s3Client = new S3Client({
   region: bucketRegion,
   credentials: {
@@ -29,17 +29,12 @@ const s3Client = new S3Client({
 })
 
 export const deleteObject = async (file: string) => {
-  try {
-    const params = {
-      Bucket: bucketName,
-      Key: file,
-    }
-    const command = new DeleteObjectCommand(params)
-    await s3Client.send(command)
-  } catch (error) {
-    console.log(error)
-    return error
+  const params = {
+    Bucket: bucketName,
+    Key: file,
   }
+  const command = new DeleteObjectCommand(params)
+  await s3Client.send(command)
 }
 
 const getImageUrl = async (imageName: string): Promise<string> => {
@@ -54,41 +49,37 @@ const getImageUrl = async (imageName: string): Promise<string> => {
 }
 
 export const addImage = async (carId: string, file: Express.Multer.File): Promise<ImageModel> => {
-  try {
-    const car = await checkCar(carId)
-    const imageName = `${car.ownerId}/${car.id}/${file.originalname}`
+  const car = await checkCar(carId)
+  const imageName = `${car.ownerId}/${car.id}/${file.originalname}`
 
-    const params = {
-      Bucket: bucketName,
-      Key: imageName,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    }
-    console.log(params)
-
-    const command = new PutObjectCommand(params)
-    await s3Client.send(command)
-
-    const image = await prisma.image.create({
-      data: {
-        imageName,
-        car: { connect: { id: car.id } },
-      },
-    })
-    console.log(image)
-
-    const url = await getImageUrl(imageName)
-
-    const imageDetails: ImageModel = {
-      id: image.id,
-      key: imageName,
-      imageUrl: url,
-    }
-
-    return imageDetails
-  } catch (error) {
-    return error
+  const params = {
+    Bucket: bucketName,
+    Key: imageName,
+    Body: file.buffer,
+    ContentType: file.mimetype,
   }
+  console.log(params)
+
+  const command = new PutObjectCommand(params)
+  await s3Client.send(command)
+
+  const image = await prisma.image.create({
+    data: {
+      imageName,
+      car: { connect: { id: car.id } },
+    },
+  })
+  console.log(image)
+
+  const url = await getImageUrl(imageName)
+
+  const imageDetails: ImageModel = {
+    id: image.id,
+    key: imageName,
+    imageUrl: url,
+  }
+
+  return imageDetails
 }
 
 export const getImages = async (carId: string): Promise<ImageModel[]> => {
@@ -105,12 +96,9 @@ export const getImages = async (carId: string): Promise<ImageModel[]> => {
 }
 
 export const deleteImage = async (carId: string, imageId: number) => {
-  const car = await checkCar(carId) // await prisma.image.findFirst({where:{carId:carId,id:id}}) better version - maybe an index in db
-  const image = car.images.find((image) => image.id === imageId)
-  if (!image) {
-    throw new HttpException(StatusCodes.NOT_FOUND, "Image is not found")
-  }
-  await deleteObject(image.imageName)
+  const image = await prisma.image.delete({ where: { id: imageId, carId } })
 
-  await prisma.image.delete({ where: { id: imageId } })
+  if (image) {
+    await deleteObject(image.imageName)
+  }
 }

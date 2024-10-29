@@ -1,5 +1,4 @@
 import { ZodError, ZodErrorMap, ZodIssue } from "zod"
-import { HttpException } from "./HttpException"
 
 export class ZodException extends Error {
   issues: ZodError

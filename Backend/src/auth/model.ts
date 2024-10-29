@@ -1,13 +1,4 @@
-import { z, ZodFunction, ZodObject, ZodSchema } from "zod"
-import { ZodException } from "../exception/ZodException"
-import { StatusCodes } from "http-status-codes"
-
-// export interface UserModel {
-//   userName: string
-//   email: string
-//   password: string
-//   phoneNumber: string
-// }
+import { z } from "zod"
 
 export const userValidationZod = z.object({
   userName: z.string({ required_error: "UserName is required" }).trim(),
@@ -18,10 +9,6 @@ export const userValidationZod = z.object({
   phoneNumber: z.string({ message: "phone number is required" }).length(10),
 })
 
-// export interface LoginForm {
-//   email: string
-//   password: string
-// }
 export const loginValidation = z.object({
   email: z.string({ invalid_type_error: "Expected an email " }).email("Invalid email body"),
   password: z.string({ required_error: "password is required" }),

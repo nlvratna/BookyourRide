@@ -4,22 +4,17 @@ import { StatusCodes } from "http-status-codes"
 import * as jwt from "jsonwebtoken"
 
 export const verifyJwt = (request: Request, res: Response, next: NextFunction) => {
-  try {
-    const authHeader = request.headers.authorization
-    if (!authHeader?.startsWith("Bearer ")) {
-      throw new HttpException(StatusCodes.UNAUTHORIZED, "Authorization failed")
-    }
-    const token = authHeader.split(" ")[1]
-
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET) as jwt.JwtPayload
-    request.user = {
-      id: decoded.userInfo.id,
-      role: decoded.userInfo.role,
-    }
-
-    next()
-  } catch (error) {
-    console.log(error)
-    throw new HttpException(StatusCodes.UNAUTHORIZED, error)
+  const authHeader = request.headers.authorization
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new HttpException(StatusCodes.UNAUTHORIZED, "Authorization failed")
   }
+  const token = authHeader.split(" ")[1]
+
+  const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET) as jwt.JwtPayload
+  request.user = {
+    id: decoded.userInfo.id,
+    role: decoded.userInfo.role,
+  }
+
+  next()
 }
