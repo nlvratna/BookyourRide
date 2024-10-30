@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["typedSql"]
 }
 
@@ -14,90 +14,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users{
-  id Int  @id @default(autoincrement())
-  userName String 
-  email String @unique
-  password String 
-  phoneNumber String 
-  role Role? @default(USER)
+model Users {
+  id           Int    @id @default(autoincrement())
+  userName     String
+  email        String @unique
+  password     String
+  phoneNumber  String
+  role         Role?  @default(USER)
   refreshToken String
 
-   Owner Owner? 
+  Owner Owner?
 
-   bookings Bookings[]
+  bookings Bookings[]
+
   @@map("users")
-  
-   
 }
 
-
-model Owner{  // still need a lot of fields
-  id        String    @id @default(uuid())
-  location  String
-  shopName  String
-  details   Users    @relation(fields: [userId],references: [id],onDelete: Cascade)
-  userId    Int      @unique
-  car       Car[] 
+model Owner {
+  id       String @id @default(uuid())
+  location String
+  shopName String
+  details  Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int    @unique
+  car      Car[]
 }
 
-enum Role{
+enum Role {
   USER
   RENTAL_OWNER
 }
 
-model Car{
-  id           String     @id @default(uuid())
-  name         String
-  type         CarType       
-  brand        String
-  images       Image[]
-  pricePerDay  Decimal       @db.Money
-  isBooked     Boolean       @default(false)
-  bookings     Bookings[]  // One car can have multiple bookings over time
+model Car {
+  id          String     @id @default(uuid())
+  name        String
+  type        CarType
+  brand       String
+  images      Image[]
+  pricePerDay Decimal    @db.Money
+  isBooked    Boolean    @default(false)
+  bookings    Bookings[]
 
- // I need some unique field so that the car don't get added twice from same owner - carNumber Plate //TODO  or this could be a unique field
-
-  owner Owner @relation(fields: [ownerId],references: [id],onDelete: NoAction)
-  ownerId String 
+  owner   Owner  @relation(fields: [ownerId], references: [id], onDelete: NoAction)
+  ownerId String
 }
-
 
 model Image {
-  id            Int     @id @default(autoincrement())
-  imageName    String
-  car           Car     @relation(fields: [carId],references: [id],onDelete: Cascade)
-  carId        String 
+  id        Int    @id @default(autoincrement())
+  imageName String
+  car       Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+  carId     String
+
+  @@index([id, carId])
 }
 
-
-enum CarType{
+enum CarType {
   TwoSeater
   FiveSeater
   SevenSeater
 }
 
+model Bookings {
+  id        String   @id @default(uuid())
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
 
-
-model Bookings{
-  id         String      @id @default(uuid()) 
-  startDate  DateTime    @db.Date
-  endDate    DateTime    @db.Date
-
-  car        Car         @relation(fields: [carId],references: [id]) 
-  carId      String
-  bookedBy   Users       @relation(fields: [userId], references: [id])
-  userId     Int
-}
-
-model Payments{
-  id              Int        @id @default(autoincrement())
-  orderId         String     @db.VarChar(256)     @map("order_id")
-  paymentId       String     @db.VarChar(256)     @map("payment_id")
-  paymentStatus   PaymentStatus  
-}
-
-enum PaymentStatus{
-   SUCCESS
-   FAILED
+  car      Car    @relation(fields: [carId], references: [id])
+  carId    String
+  bookedBy Users  @relation(fields: [userId], references: [id])
+  userId   Int
 }

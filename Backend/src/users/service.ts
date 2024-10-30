@@ -2,9 +2,8 @@ import { StatusCodes } from "http-status-codes"
 import { HttpException } from "../exception/HttpException"
 import { prisma } from "../utils/PrismaClient"
 import { Profile } from "./model"
-import { compare, compareSync } from "bcrypt"
+import { compareSync } from "bcrypt"
 import { Owner, Role, Users } from "@prisma/client"
-import { boolean } from "zod"
 
 //  Add change password email and otp  phone number verification later
 

@@ -1,4 +1,4 @@
-import { Car, CarType, Image } from "@prisma/client"
+import { Car, CarType, Image, Prisma } from "@prisma/client"
 import { StatusCodes } from "http-status-codes"
 import { HttpException } from "../exception/HttpException"
 import { prisma } from "../utils/PrismaClient"
@@ -66,23 +66,4 @@ export const deleteListing = async (userId: number, carId: string) => {
 
   await deleteObject(carId)
   await prisma.car.delete({ where: { id: carId, ownerId: owner.id } })
-}
-
-const uListing = async (userId: number, carId: string, carDetails: CarModel): Promise<Car | null> => {
-  const car = await prisma.car.update({
-    where: {
-      id: carId,
-      owner: {
-        details: {
-          id: userId,
-        },
-      },
-    },
-    data: carDetails,
-    include: {
-      images: true,
-    },
-  })
-
-  return
 }
