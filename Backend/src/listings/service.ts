@@ -38,32 +38,50 @@ export const addListing = async (id: number, carDetails: CarModel): Promise<Car 
 }
 
 export const updateListing = async (userId: number, carId: string, carDetails: CarModel): Promise<Car | null> => {
-  const car = await prisma.car.update({
-    where: {
-      id: carId,
-      owner: {
-        details: {
-          id: userId,
+  const car: Car | null = await prisma.car
+    .update({
+      where: {
+        id: carId,
+        owner: {
+          details: {
+            id: userId,
+          },
         },
       },
-    },
-    data: carDetails,
-    include: {
-      images: true,
-    },
-  })
+      data: carDetails,
+      include: {
+        images: true,
+      },
+    })
+    .catch(() => {
+      throw new HttpException(StatusCodes.BAD_REQUEST, `Invalid owner for the car id : ${carId} `)
+    })
 
   return car
 }
 
 export const deleteListing = async (userId: number, carId: string) => {
-  const owner = await checkOwner(userId)
+  // const owner = await checkOwner(userId)
 
-  if (!owner.car.find((car) => car.id === carId)) {
-    // I don't know if this check is important cause client will send the carId of their car in general when they look at the cars
-    throw new HttpException(StatusCodes.FORBIDDEN, "Invalid Car Owner")
-  }
+  // if (!owner.car.find((car) => car.id === carId)) {
+  //   // I don't know if this check is important cause client will send the carId of their car in general when they look at the cars
+  //   throw new HttpException(StatusCodes.FORBIDDEN, "Invalid Car Owner")
+  // }
 
   await deleteObject(carId)
-  await prisma.car.delete({ where: { id: carId, ownerId: owner.id } })
+
+  await prisma.car
+    .delete({
+      where: {
+        id: carId,
+        owner: {
+          details: {
+            id: userId,
+          },
+        },
+      },
+    })
+    .catch(() => {
+      throw new HttpException(StatusCodes.BAD_REQUEST, `Invalid owner for the car id : ${carId} `)
+    })
 }

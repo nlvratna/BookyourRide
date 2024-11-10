@@ -10,8 +10,8 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
     })
   } else if (err instanceof ZodException) {
     res.status(422).json({ status: err.status, message: err.issues.errors.map((e) => e.message).join(" ") })
-  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    res.status(409).json({ message: err.meta, reason: "Invalid details", details: err.message })
+    // } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    //   res.status(409).json({ message: err.meta, reason: "Invalid details", details: err.message })
   } else {
     res.status(500).json({ message: err.message || "Internal Server Error" })
     console.log(err.stack)
