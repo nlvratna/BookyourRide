@@ -1,25 +1,29 @@
-import { z } from "zod"
+import { z } from "zod";
 
 export const userValidationZod = z.object({
   userName: z.string({ required_error: "UserName is required" }).trim(),
-  email: z.string({ invalid_type_error: "Expected an email " }).email("Invalid email body"),
+  email: z
+    .string({ invalid_type_error: "Expected an email " })
+    .email("Invalid email body"),
   password: z
     .string({ required_error: "password is required" })
     .min(8, "Minimum 8 characters are required for a password"),
   phoneNumber: z.string({ message: "phone number is required" }).length(10),
-})
+});
 
 export const loginValidation = z.object({
-  email: z.string({ invalid_type_error: "Expected an email " }).email("Invalid email body"),
+  email: z
+    .string({ invalid_type_error: "Expected an email " })
+    .email("Invalid email body"),
   password: z.string({ required_error: "password is required" }),
-})
+});
 
 export const ownerValidation = z.object({
   user: userValidationZod.optional(),
   location: z.string({ message: "location is required" }).trim().toLowerCase(),
   shopName: z.string({ message: "shop name is required" }).trim().toLowerCase(),
-})
+});
 
-export type UserModel = z.infer<typeof userValidationZod>
-export type OwnerModel = z.infer<typeof ownerValidation>
-export type LoginForm = z.infer<typeof loginValidation>
+export type UserModel = z.infer<typeof userValidationZod>;
+export type OwnerModel = z.infer<typeof ownerValidation>;
+export type LoginForm = z.infer<typeof loginValidation>;
